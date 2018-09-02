@@ -18,8 +18,7 @@ command line.
 """
 import acoustid
 import sys
-#import directory_maker
-
+import os
 # API key for this demo script only. Get your own API key at the
 # Acoustid Web for your application.
 # http://acoustid.org/
@@ -38,7 +37,7 @@ else:
     def print_(s):
         print(s)
 
-
+path = "/home/dayscholars/Desktop"
 def aidmatch(filename):
     try:
         results = acoustid.match(API_KEY, filename)
@@ -51,17 +50,37 @@ def aidmatch(filename):
     except acoustid.WebServiceError as exc:
         print("web service request failed:", exc.message, file=sys.stderr)
         sys.exit(1)
-
-    first = True
+    #print(results)
+    #first = True
     for score, rid, title, artist in results:
-        if first:
-            first = False
-        else:
-            print()
-        print_('%s - %s' % (artist, title))
-        print_('http://musicbrainz.org/recording/%s' % rid)
-        print_('Score: %i%%' % (int(score * 100)))
+         return artist, title
 
+def file_rename(file_path, meta):
+    if not os.path.isdir(path +'/'+meta[0]):
+        os.mkdir(os.path.join(path, meta[0]))
+    os.rename(file_path, '/home/dayscholars/Desktop/'+meta[0]+'/'+meta[1]+'.mp3')
 
+def list_mp3(d_path):
+    s = []
+    for file in os.listdir(d_path):
+        if file.endswith(".mp3"):
+            s.append(os.path.join(d_path, file))   
+    #print(s)
+    return s
+
+        
 if __name__ == '__main__':
-    aidmatch(sys.argv[1])
+    print("Welcome. This is a program for sorting and renaming mp3 files bu using acoustid web service")
+    print("Enter the directory path for which you want to sort and rename mp3s")
+    directory_path = input("-->") 
+   # directory_path = "/home/dayscholars/Desktop/lyceaum_exrecises/project_acoustic/pyacoustid"
+    mp3_files = list_mp3(directory_path)
+    for i in mp3_files:
+        #s = mp3_files.pop()
+        t = aidmatch(i)
+        if t:
+            print(i, t)
+            file_rename(i, t)
+        else:
+            print(i + " not found in database")
+    
